@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  body {
+    background-color: #FAF7F2;
+    color: #16191F;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Custom subtle focus styles */
+  :focus-visible {
+    outline: 2px solid #E25B3D;
+    outline-offset: 2px;
+  }
+}
+
+@layer utilities {
+  /* Subtle parchment texture backdrop */
+  .bg-warm-pattern {
+    background-color: #FAF7F2;
+    background-image: radial-gradient(rgba(22, 25, 31, 0.04) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+}
