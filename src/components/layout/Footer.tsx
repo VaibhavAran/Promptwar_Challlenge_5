@@ -45,10 +45,10 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
 
         <div className="flex items-center gap-2 text-xs text-charcoal-500 bg-white px-3 py-1.5 rounded-full border border-sand-300">
           <ShieldCheck className="w-4 h-4 text-emerald-600" />
-          <span>Milestone 1 Architecture Ready</span>
+          <span>Production-ready workspace</span>
           <span className="text-sand-300">•</span>
           <span className="flex items-center gap-1 text-coral-600 font-medium">
-            <Sparkles className="w-3 h-3" /> GenAI Phase 2 Ready
+            <Sparkles className="w-3 h-3" /> Gemini planning live
           </span>
         </div>
       </div>

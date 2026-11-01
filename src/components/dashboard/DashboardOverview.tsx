@@ -5,7 +5,6 @@ import {
   Users,
   DollarSign,
   Utensils,
-  Sparkles,
   Edit3,
   FileText,
   Clock,
@@ -18,9 +17,12 @@ import { formatCurrency, formatDate, formatEventType } from '../../utils/formatt
 import { Card } from '../common/Card';
 import { Button } from '../common/Button';
 import { Badge } from '../common/Badge';
-import { BudgetTrackerPreview } from './BudgetTrackerPreview';
-import { TimelinePreview } from './TimelinePreview';
-import { ChecklistPreview } from './ChecklistPreview';
+import { useEventPlan } from '../../hooks/useEventPlan';
+import { GenerationPanel } from './GenerationPanel';
+import { AiEventConcept } from './AiEventConcept';
+import { AiBudgetTracker } from './AiBudgetTracker';
+import { AiTimeline } from './AiTimeline';
+import { AiChecklist } from './AiChecklist';
 
 interface DashboardOverviewProps {
   draft: EventDraft | null;
@@ -36,6 +38,24 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
   onClearWorkspace,
 }) => {
   const [activeTab, setActiveTab] = useState<DashboardTab>('overview');
+
+  const {
+    plan,
+    status,
+    error,
+    retryCount,
+    generate,
+    regenerate,
+    clearPlan,
+    dismissError,
+    isGenerating,
+    hasPlan,
+  } = useEventPlan(draft);
+
+  const handleResetWorkspace = () => {
+    clearPlan();
+    onClearWorkspace();
+  };
 
   if (!draft) {
     return (
@@ -81,10 +101,17 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
           <div>
             <div className="flex flex-wrap items-center gap-2 mb-2">
               <Badge variant="coral">{formatEventType(draft.eventType)}</Badge>
-              <Badge variant="sand">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 mr-1.5 inline-block" />
-                Draft Configured
-              </Badge>
+              {hasPlan ? (
+                <Badge variant="sand">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 mr-1.5 inline-block" />
+                  AI Plan Active
+                </Badge>
+              ) : (
+                <Badge variant="sand">
+                  <span className="w-2 h-2 rounded-full bg-amber-500 mr-1.5 inline-block" />
+                  Ready to Generate
+                </Badge>
+              )}
               <span className="text-xs text-charcoal-400 font-mono">
                 ID: {draft.id.slice(0, 14)}
               </span>
@@ -103,6 +130,17 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
 
           {/* Quick Header Actions */}
           <div className="flex flex-wrap items-center gap-2.5">
+            {hasPlan && (
+              <GenerationPanel
+                status={status}
+                error={error}
+                retryCount={retryCount}
+                hasPlan={hasPlan}
+                onGenerate={generate}
+                onDismissError={dismissError}
+                compact
+              />
+            )}
             <Button
               variant="secondary"
               size="sm"
@@ -114,7 +152,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
             <Button
               variant="ghost"
               size="sm"
-              onClick={onClearWorkspace}
+              onClick={handleResetWorkspace}
               leftIcon={<RotateCcw className="w-3.5 h-3.5" />}
             >
               Reset
@@ -177,7 +215,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
           }`}
         >
           <FileText className="w-4 h-4" />
-          <span>Event Brief & Scope</span>
+          <span>Event Brief & Concept</span>
         </button>
 
         <button
@@ -221,41 +259,39 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
       {activeTab === 'overview' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
-            {/* GenAI Readiness Panel */}
-            <Card className="p-6 border-coral-200 bg-coral-50/40">
-              <div className="flex items-start gap-3">
-                <Sparkles className="w-5 h-5 text-coral-600 mt-0.5 shrink-0" />
-                <div>
-                  <h3 className="font-serif text-lg font-bold text-charcoal-900 mb-1">
-                    GenAI Architecture Blueprint (Phase 2 Readiness)
-                  </h3>
-                  <p className="text-xs sm:text-sm text-charcoal-700 leading-relaxed mb-3">
-                    Your parameters are fully validated and registered in the application state. In Phase 2, our GenAI pipeline will transform these parameters into:
-                  </p>
-                  <ul className="text-xs text-charcoal-600 space-y-1.5 list-disc list-inside">
-                    <li>Hyper-local vendor matching & quotes based on <strong>{draft.city || 'your city'}</strong></li>
-                    <li>Minute-by-minute day-of schedules tailored to <strong>{draft.guestCount || 'your'} guests</strong></li>
-                    <li>Automated dietary meal distribution matching your catering constraints</li>
-                  </ul>
-                </div>
-              </div>
-            </Card>
+            {/* If plan is not yet generated, show Generation CTA */}
+            {!hasPlan && (
+              <GenerationPanel
+                status={status}
+                error={error}
+                retryCount={retryCount}
+                hasPlan={hasPlan}
+                onGenerate={generate}
+                onDismissError={dismissError}
+              />
+            )}
 
-            {/* Special notes & requirements card */}
-            <Card className="p-6 border-sand-200">
-              <h3 className="font-serif text-lg font-bold text-charcoal-900 mb-2">
-                Special Requirements & Directives
-              </h3>
-              {draft.specialRequirements ? (
+            {/* If plan is generated, render full AI Event Concept */}
+            {hasPlan && (
+              <AiEventConcept
+                draft={draft}
+                plan={plan}
+                isGenerating={isGenerating}
+                onRegenerate={regenerate}
+              />
+            )}
+
+            {/* Special notes & directives */}
+            {!hasPlan && draft.specialRequirements && (
+              <Card className="p-6 border-sand-200">
+                <h3 className="font-serif text-lg font-bold text-charcoal-900 mb-2">
+                  Special Requirements & Directives
+                </h3>
                 <p className="text-sm text-charcoal-700 leading-relaxed p-4 rounded-lg bg-ivory-50 border border-sand-200">
                   {draft.specialRequirements}
                 </p>
-              ) : (
-                <p className="text-xs text-charcoal-400 italic">
-                  No special accessibility or music directives specified yet.
-                </p>
-              )}
-            </Card>
+              </Card>
+            )}
           </div>
 
           <div className="space-y-6">
@@ -280,13 +316,13 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
               )}
             </Card>
 
-            {/* Quick Actions Card */}
+            {/* Workspace Modules Navigation Card */}
             <Card className="p-6 border-sand-200 bg-sand-100/50">
               <h3 className="font-serif text-base font-bold text-charcoal-900 mb-2">
-                Workspace Tools
+                Workspace Modules
               </h3>
               <p className="text-xs text-charcoal-600 mb-4">
-                Explore the modular planner engines:
+                Explore your personalized celebration engines:
               </p>
               <div className="space-y-2">
                 <Button
@@ -319,9 +355,35 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
         </div>
       )}
 
-      {activeTab === 'budget' && <BudgetTrackerPreview draft={draft} />}
-      {activeTab === 'timeline' && <TimelinePreview draft={draft} />}
-      {activeTab === 'checklist' && <ChecklistPreview draft={draft} />}
+      {activeTab === 'budget' && (
+        <AiBudgetTracker
+          draft={draft}
+          plan={plan}
+          isGenerating={isGenerating}
+          onRegenerate={regenerate}
+          onGenerate={generate}
+        />
+      )}
+
+      {activeTab === 'timeline' && (
+        <AiTimeline
+          draft={draft}
+          plan={plan}
+          isGenerating={isGenerating}
+          onRegenerate={regenerate}
+          onGenerate={generate}
+        />
+      )}
+
+      {activeTab === 'checklist' && (
+        <AiChecklist
+          draft={draft}
+          plan={plan}
+          isGenerating={isGenerating}
+          onRegenerate={regenerate}
+          onGenerate={generate}
+        />
+      )}
     </div>
   );
 };

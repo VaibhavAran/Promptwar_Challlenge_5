@@ -162,8 +162,8 @@ export const EventPlannerForm: React.FC<EventPlannerFormProps> = ({
 
     const draft: EventDraft = {
       ...formData,
-      id: `evt-${Date.now()}`,
-      createdAt: new Date().toISOString(),
+      id: (initialData as EventDraft)?.id || `evt-${Date.now()}`,
+      createdAt: (initialData as EventDraft)?.createdAt || new Date().toISOString(),
       status: 'ready_for_ai',
     };
 
@@ -179,7 +179,7 @@ export const EventPlannerForm: React.FC<EventPlannerFormProps> = ({
       {/* Top Header */}
       <div className="mb-8">
         <div className="flex flex-wrap items-center justify-between gap-4 mb-3">
-          <Badge variant="coral">Phase 1 • Event Configuration</Badge>
+          <Badge variant="coral">Event Configuration</Badge>
           <div className="flex items-center gap-2">
             <Button
               type="button"
@@ -206,7 +206,7 @@ export const EventPlannerForm: React.FC<EventPlannerFormProps> = ({
           Plan Your Celebration
         </h1>
         <p className="mt-2 text-charcoal-600 text-sm sm:text-base leading-relaxed">
-          Provide your celebration logistics below. All parameters are validated client-side and saved into your workspace, ready for GenAI plan generation in Phase 2.
+          Provide your celebration logistics below. Your validated details are saved into the workspace and used to generate a tailored Gemini event plan.
         </p>
       </div>
 
@@ -461,11 +461,11 @@ export const EventPlannerForm: React.FC<EventPlannerFormProps> = ({
             </div>
           </div>
 
-          {/* Explicit Engineering Rule Notice */}
+          {/* GenAI Engine Architecture Notice */}
           <div className="p-4 rounded-xl bg-sand-100 border border-sand-300 flex items-start gap-3">
             <Sparkles className="w-4 h-4 text-coral-600 mt-0.5 shrink-0" />
             <div className="text-xs text-charcoal-600 leading-relaxed">
-              <strong className="text-charcoal-900">Milestone 1 Architecture:</strong> Submitting this form validates your inputs and stores your celebration specifications locally in your session workspace. Real GenAI generation (dynamic budget allocations, minute-by-minute run of show, and vendor checklists) will be integrated in Phase 2.
+              <strong className="text-charcoal-900">Gatherly AI GenAI Engine:</strong> Submitting this form validates your inputs and stores your celebration specifications in your workspace. Our Google Gemini engine will then generate a tailored event concept, reconciled budget allocations, run-of-show schedule, and vendor checklist.
             </div>
           </div>
 

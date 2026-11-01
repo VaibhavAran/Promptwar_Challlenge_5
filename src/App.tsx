@@ -30,6 +30,7 @@ export const App: React.FC = () => {
 
   const handleSaveDraft = (newDraft: EventDraft) => {
     setDraft(newDraft);
+    setSelectedTypeForPlanner(undefined);
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(newDraft));
     } catch {
@@ -41,6 +42,7 @@ export const App: React.FC = () => {
 
   const handleClearWorkspace = () => {
     setDraft(null);
+    setSelectedTypeForPlanner(undefined);
     try {
       localStorage.removeItem(STORAGE_KEY);
     } catch {
@@ -84,6 +86,9 @@ export const App: React.FC = () => {
       <Navbar
         activeView={activeView}
         onNavigate={(view) => {
+          // A direct planner navigation should not override an existing draft
+          // with a stale event type selected from the landing-page showcase.
+          if (view === 'planner') setSelectedTypeForPlanner(undefined);
           setActiveView(view);
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
@@ -126,6 +131,7 @@ export const App: React.FC = () => {
           <DashboardOverview
             draft={draft}
             onEditEvent={() => {
+              setSelectedTypeForPlanner(undefined);
               setActiveView('planner');
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
